@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ciclo del Taller Mayo — Legalité</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
+
+  :root {
+    --rojo: #C8102E;
+    --negro: #111;
+    --gris-dark: #1c1c1c;
+    --gris-mid: #2c2c2c;
+    --gris-line: #333;
+    --blanco: #f4f1ec;
+    --acento: #e8b84b;
+    --azul: #5b8fe8;
+    --verde: #4ecb8d;
+    --morado: #b05be8;
+    --naranja: #e87b5b;
+    --cyan: #5bcfe8;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--negro);
+    color: var(--blanco);
+    font-family: 'DM Sans', sans-serif;
+    padding: 48px 40px 80px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    margin-bottom: 52px;
+  }
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem;
+    letter-spacing: 3px;
+    line-height: 1;
+  }
+  header h1 em {
+    color: var(--rojo);
+    font-style: normal;
+  }
+  header p {
+    font-size: 0.72rem;
+    color: #555;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  /* PHASE LABELS — horizontal bar */
+  .phase-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+    margin-bottom: 36px;
+  }
+  .phase-seg {
+    padding: 8px 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    border-radius: 2px;
+    text-align: center;
+  }
+  .phase-seg.antes  { background: var(--rojo); color: #fff; }
+  .phase-seg.durante{ background: var(--acento); color: var(--negro); }
+  .phase-seg.despues{ background: var(--gris-mid); color: var(--blanco); border:1px solid var(--gris-line); }
+  .phase-seg small {
+    display:block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    opacity: 0.7;
+    font-weight: 400;
+    margin-top: 1px;
+  }
+
+  /* TIMELINE */
+  .timeline {
+    position: relative;
+    padding-left: 0;
+  }
+
+  /* central spine */
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 110px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--rojo), var(--acento) 60%, var(--gris-mid));
+    border-radius: 2px;
+  }
+
+  /* WEEK BLOCK */
+  .week {
+    margin-bottom: 6px;
+  }
+
+  /* ACORDEÓN */
+  .week-accordion {
+    margin: 12px 0 0;
+  }
+  .week-accordion summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+  }
+  .week-accordion summary::-webkit-details-marker { display: none; }
+  .week-accordion[open] > summary .wl-arrow { content: '▾'; }
+
+  .week-label {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 10px 0 10px 0;
+    border-bottom: 1px solid #252525;
+  }
+  .week-accordion[open] .week-label { border-color: #383838; }
+
+  .wl-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+
+  /* spacer to align with timeline spine */
+  .wl-left::before {
+    content: '';
+    display: inline-block;
+    width: 94px;
+    flex-shrink: 0;
+  }
+
+  .wl-arrow {
+    font-size: 0.65rem;
+    color: var(--rojo);
+    width: 14px;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .week-accordion[open] .wl-arrow { transform: rotate(90deg); }
+
+  .wl-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.15rem;
+    letter-spacing: 2px;
+    color: var(--blanco);
+  }
+
+  .wl-date {
+    font-size: 0.68rem;
+    color: #555;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .week-body {
+    padding-top: 6px;
+  }
+
+  /* PHASE TAGS */
+  .phase-tag {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    padding: 3px 9px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-right: 2px;
+  }
+  .pt-antes   { background: rgba(200,16,46,0.15); color: var(--rojo); border: 1px solid rgba(200,16,46,0.3); }
+  .pt-durante { background: rgba(232,184,75,0.12); color: var(--acento); border: 1px solid rgba(232,184,75,0.25); }
+  .pt-despues { background: rgba(255,255,255,0.04); color: #666; border: 1px solid #333; }
+
+  /* OVERVIEW */
+  .overview {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 52px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .ov-phase {
+    flex: 1;
+    padding: 20px 18px 16px;
+    position: relative;
+  }
+
+  .ov-antes  { background: #1a0408; border-top: 3px solid var(--rojo); }
+  .ov-durante{ background: #1a1500; border-top: 3px solid var(--acento); }
+  .ov-despues{ background: #161616; border-top: 3px solid #555; }
+
+  .ov-sep {
+    width: 1px;
+    background: #2a2a2a;
+    flex-shrink: 0;
+  }
+
+  .ov-phase-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ov-antes .ov-phase-label  { color: var(--rojo); }
+  .ov-durante .ov-phase-label{ color: var(--acento); }
+  .ov-despues .ov-phase-label{ color: #777; }
+
+  .ov-phase-label span {
+    font-size: 0.55rem;
+    color: #444;
+    letter-spacing: 1px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+  }
+
+  .ov-weeks {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .ov-week {
+    font-size: 0.6rem;
+    padding: 3px 8px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.04);
+    color: #666;
+    letter-spacing: 1px;
+    font-family: 'Bebas Neue', sans-serif;
+  }
+
+  .ov-milestones {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .ov-m {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    font-size: 0.72rem;
+    color: #aaa;
+    line-height: 1.3;
+  }
+
+  .ov-m-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .ov-m.highlight { color: var(--blanco); font-weight: 500; }
+
+  .ov-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    background: #161616;
+    color: #333;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  /* EVENT ROW */
+  .event {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    min-height: 36px;
+    margin-bottom: 4px;
+    position: relative;
+  }
+
+  .event-date {
+    width: 108px;
+    flex-shrink: 0;
+    text-align: right;
+    padding-right: 14px;
+    padding-top: 6px;
+  }
+
+  .event-date .day {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #999;
+    display: block;
+    line-height: 1.1;
+  }
+
+  .event-date .dow {
+    font-size: 0.6rem;
+    color: #555;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* DOT */
+  .event-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 8px;
+    position: relative;
+    z-index: 2;
+    border: 2px solid var(--negro);
+  }
+
+  /* CARD */
+  .event-card {
+    flex: 1;
+    margin-left: 14px;
+    border-radius: 3px;
+    border-left: 3px solid transparent;
+    background: var(--gris-dark);
+    padding: 7px 12px;
+  }
+
+  .event-card .tag {
+    font-size: 0.57rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.55;
+    margin-bottom: 2px;
+  }
+
+  .event-card .title {
+    font-size: 0.88rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--blanco);
+  }
+
+  .event-card .sub {
+    font-size: 0.72rem;
+    color: #666;
+    margin-top: 3px;
+    font-style: italic;
+  }
+
+  /* Sub-items */
+  .event-card .items {
+    margin-top: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .chip {
+    font-size: 0.62rem;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.06);
+    color: #aaa;
+    white-space: nowrap;
+  }
+
+  /* COLOR VARIANTS */
+  .c-prod   { background: #5b8fe8; } .b-prod   { border-color: #5b8fe8; }
+  .c-content{ background: var(--naranja); } .b-content{ border-color: var(--naranja); }
+  .c-ads    { background: var(--verde); } .b-ads    { border-color: var(--verde); }
+  .c-email  { background: var(--morado); } .b-email  { border-color: var(--morado); }
+  .c-evento { background: var(--acento); } .b-evento { border-color: var(--acento); }
+  .c-ventas { background: var(--rojo); } .b-ventas { border-color: var(--rojo); }
+  .c-live   { background: var(--cyan); } .b-live   { border-color: var(--cyan); }
+  .c-post   { background: #888; } .b-post   { border-color: #888; }
+
+  /* KEY EVENTS — bigger */
+  .event.key .event-card {
+    background: #1f1f1f;
+    padding: 10px 14px;
+  }
+  .event.key .event-card .title {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .event.key .event-dot {
+    width: 16px;
+    height: 16px;
+    margin-top: 6px;
+  }
+
+  /* DIVIDER */
+  .phase-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0 16px;
+    padding-left: 122px;
+  }
+  .phase-divider span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    padding: 3px 10px;
+    border-radius: 2px;
+  }
+  .phase-divider .pd-antes  { background: var(--rojo); color: white; }
+  .phase-divider .pd-durante{ background: var(--acento); color: var(--negro); }
+  .phase-divider .pd-despues{ background: var(--gris-mid); color: var(--blanco); border:1px solid #444; }
+  .phase-divider hr { flex:1; border:none; border-top: 1px solid #2a2a2a; }
+
+  /* LEGEND */
+  footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gris-line);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  footer p { font-size:0.62rem; color:#333; letter-spacing:1px; margin-right:8px; }
+  .leg { display:flex; align-items:center; gap:5px; font-size:0.62rem; color:#666; }
+  .leg-dot { width:8px; height:8px; border-radius:50%; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>CICLO DEL <em>TALLER</em> VIRTUAL</h1>
+  <p>Legalité · Mayo 2026 · Protocolo de ejecución</p>
+</header>
+
+<!-- OVERVIEW HORIZONTAL -->
+<div class="overview">
+
+  <div class="ov-phase ov-antes">
+    <div class="ov-phase-label">ANTES <span>· 4 semanas</span></div>
+    <div class="ov-weeks">
+      <span class="ov-week">SEM 1 · ABR 20</span>
+      <span class="ov-week">SEM 2 · ABR 27</span>
+      <span class="ov-week">SEM 3 · MAY 4</span>
+      <span class="ov-week">SEM 4 · MAY 10</span>
+    </div>
+    <div class="ov-milestones">
+      <div class="ov-m highlight"><div class="ov-m-dot" style="background:var(--rojo)"></div>Kick-off · producción · landing</div>
+      <div class="ov-m"><div class="ov-m-dot" style="background:#5b8fe8"></div>Reels + carruseles + ads activos</div>
+      <div class="ov-m"><div class="ov-m-dot" style="background:var(--morado)"></div>5 emails Brevo en secuencia</div>
+      <div class="ov-m highlight"><div class="ov-m-dot" style="background:var(--acento)"></div>Clase Bonus — Mié 6 mayo</div>
+      <div class="ov-m highlight"><div class="ov-m-dot" style="background:var(--cyan)"></div>LIVE gratuito — Dom 10 mayo</div>
+      <div class="ov-m"><div class="ov-m-dot" style="background:var(--rojo)"></div>Pipeline Kommo + micro campañas</div>
+    </div>
+  </div>
+
+  <div class="ov-sep"></div>
+  <div class="ov-arrow">›</div>
+  <div class="ov-sep"></div>
+
+  <div class="ov-phase ov-durante">
+    <div class="ov-phase-label">DURANTE <span>· 1 semana</span></div>
+    <div class="ov-weeks">
+      <span class="ov-week">SEM 5 · MAY 17</span>
+    </div>
+    <div class="ov-milestones">
+      <div class="ov-m highlight"><div class="ov-m-dot" style="background:var(--acento)"></div>Sesión 1 — Mar 19 mayo · 18h30</div>
+      <div class="ov-m highlight"><div class="ov-m-dot" style="background:var(--acento)"></div>Sesión 2 — Jue 21 mayo · 18h30</div>
+      <div class="ov-m"><div class="ov-m-dot" style="background:#5b8fe8"></div>Materiales en Circle + WhatsApp</div>
+      <div class="ov-m"><div class="ov-m-dot" style="background:var(--rojo)"></div>Micro campaña post sesión 1</div>
+    </div>
+  </div>
+
+  <div class="ov-sep"></div>
+  <div class="ov-arrow">›</div>
+  <div class="ov-sep"></div>
+
+  <div class="ov-phase ov-despues">
+    <div class="ov-phase-label">DESPUÉS <span>· siguiente ciclo</span></div>
+    <div class="ov-weeks">
+      <span class="ov-week">MAY 22+</span>
+    </div>
+    <div class="ov-milestones">
+      <div class="ov-m"><div class="ov-m-dot" style="background:#888"></div>Grabaciones + certificado en Circle</div>
+      <div class="ov-m"><div class="ov-m-dot" style="background:var(--morado)"></div>Email post-taller</div>
+      <div class="ov-m highlight"><div class="ov-m-dot" style="background:var(--rojo)"></div>Upsell Legalité+</div>
+      <div class="ov-m highlight"><div class="ov-m-dot" style="background:var(--rojo)"></div>Arranque ciclo siguiente taller</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="timeline">
+
+  <!-- SEMANA 1 — abierta por defecto -->
+  <details class="week-accordion" open>
+    <summary class="week-label">
+      <span class="wl-left">
+        <span class="wl-arrow">▾</span>
+        <span class="wl-num">Semana 1</span>
+        <span class="wl-date">Abr 20 – 25</span>
+      </span>
+      <span class="phase-tag pt-antes">Antes</span>
+    </summary>
+    <div class="week-body">
+
+      <div class="event key">
+        <div class="event-date"><span class="day">Lun 20</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-prod"></div>
+        <div class="event-card b-prod">
+          <div class="tag">Producción · Kick-off</div>
+          <div class="title">Inicio del ciclo</div>
+          <div class="items">
+            <span class="chip">Workbook</span>
+            <span class="chip">Diapositivas</span>
+            <span class="chip">Zoom links</span>
+            <span class="chip">Artworks estáticos (carruseles, emails)</span>
+            <span class="chip">Plan de anuncios — GSheet</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Mar 21</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-ventas"></div>
+        <div class="event-card b-ventas">
+          <div class="tag">Ventas — Kommo</div>
+          <div class="title">Setup funnel taller mayo + plantillas (Sahian)</div>
+          <div class="sub">Secuencia de seguimiento WhatsApp activa</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Mar 21</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-email"></div>
+        <div class="event-card b-email">
+          <div class="tag">Email — Brevo + SendFox</div>
+          <div class="title">Anuncio del taller</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Mar 21</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-content"></div>
+        <div class="event-card b-content">
+          <div class="tag">Contenido orgánico</div>
+          <div class="title">Reel + historia — Anuncio del taller y clase bonus</div>
+          <div class="sub">Instagram / TikTok</div>
+        </div>
+      </div>
+
+      <div class="event key">
+        <div class="event-date"><span class="day">Mar 21</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-prod"></div>
+        <div class="event-card b-prod">
+          <div class="tag">Producción · Video — Sesión única de grabación</div>
+          <div class="title">Grabación de todos los reels del ciclo</div>
+          <div class="items">
+            <span class="chip">Reel lanzamiento</span>
+            <span class="chip">Reel Early Bird</span>
+            <span class="chip">Reel retargeting</span>
+            <span class="chip">Reel últimos cupos</span>
+          </div>
+          <div class="sub">Espacio rentado · todos en el mismo día</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Mié 22</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-prod"></div>
+        <div class="event-card b-prod">
+          <div class="tag">Producción</div>
+          <div class="title">Landing page del taller — publicada</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Mié 22</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-ads"></div>
+        <div class="event-card b-ads">
+          <div class="tag">Ads — Meta</div>
+          <div class="title">Anuncio principal del taller activo</div>
+          <div class="sub">Reel + carrusel · Sandra</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Jue 23</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-content"></div>
+        <div class="event-card b-content">
+          <div class="tag">Contenido orgánico</div>
+          <div class="title">Reel o Historia</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Vie 25</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-content"></div>
+        <div class="event-card b-content">
+          <div class="tag">Contenido orgánico</div>
+          <div class="title">Testimonio o caso real relacionado al tema</div>
+          <div class="sub">Reel corto · genera credibilidad</div>
+        </div>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- SEMANA 2 -->
+  <details class="week-accordion">
+    <summary class="week-label">
+      <span class="wl-left">
+        <span class="wl-arrow">▸</span>
+        <span class="wl-num">Semana 2</span>
+        <span class="wl-date">Abr 27 – May 2</span>
+      </span>
+      <span class="phase-tag pt-antes">Antes</span>
+    </summary>
+    <div class="week-body">
+
+      <div class="event">
+        <div class="event-date"><span class="day">Lun 27</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-prod"></div>
+        <div class="event-card b-prod">
+          <div class="tag">Plataforma</div>
+          <div class="title">Creación del espacio del taller en Circle</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Lun 27</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-content"></div>
+        <div class="event-card b-content">
+          <div class="tag">Contenido orgánico</div>
+          <div class="title">Reel Early Bird / Clase Bonus</div>
+          <div class="sub">+ carrusel · Promociona la clase bonus del 6 de mayo</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Lun 27</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-ads"></div>
+        <div class="event-card b-ads">
+          <div class="tag">Ads — Meta</div>
+          <div class="title">Anuncio Early Bird activo</div>
+          <div class="sub">Reel + carrusel</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Mié 29</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-ventas"></div>
+        <div class="event-card b-ventas">
+          <div class="tag">Ventas — Kommo</div>
+          <div class="title">Push pipeline — "falta una semana para la clase bonus"</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Mié 29</span><span class="dow">Abr</span></div>
+        <div class="event-dot c-content"></div>
+        <div class="event-card b-content">
+          <div class="tag">Contenido orgánico</div>
+          <div class="title">Pregunta o encuesta interactiva — tema jurídico del taller</div>
+          <div class="sub">Historia / Stories · genera engagement</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Vie 2</span><span class="dow">May</span></div>
+        <div class="event-dot c-prod"></div>
+        <div class="event-card b-prod">
+          <div class="tag">Producción</div>
+          <div class="title">Envío de material Clase Bonus a inscritos</div>
+          <div class="sub">Circle + grupos WhatsApp</div>
+        </div>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- SEMANA 3 -->
+  <details class="week-accordion">
+    <summary class="week-label">
+      <span class="wl-left">
+        <span class="wl-arrow">▸</span>
+        <span class="wl-num">Semana 3</span>
+        <span class="wl-date">May 4 – 9</span>
+      </span>
+      <span class="phase-tag pt-antes">Antes</span>
+    </summary>
+    <div class="week-body">
+
+      <div class="event">
+        <div class="event-date"><span class="day">Lun 4</span><span class="dow">May</span></div>
+        <div class="event-dot c-email"></div>
+        <div class="event-card b-email">
+          <div class="tag">Email — Brevo</div>
+          <div class="title">Push semana 3 — último llamado Early Bird</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Lun 4</span><span class="dow">May</span></div>
+        <div class="event-dot c-content"></div>
+        <div class="event-card b-content">
+          <div class="tag">Contenido orgánico</div>
+          <div class="title">Reel de urgencia — "últimas horas para la clase bonus"</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Mié 6</span><span class="dow">May</span></div>
+        <div class="event-dot c-ventas"></div>
+        <div class="event-card b-ventas">
+          <div class="tag">Ventas — Kommo</div>
+          <div class="title">Push pipeline — "hasta hoy puedes acceder a la clase bonus"</div>
+        </div>
+      </div>
+
+      <div class="event key">
+        <div class="event-date"><span class="day">Mié 6</span><span class="dow">May</span></div>
+        <div class="event-dot c-evento"></div>
+        <div class="event-card b-evento">
+          <div class="tag">Evento clave · Early Bird</div>
+          <div class="title">🎓 Clase Bonus — Zoom en vivo · 18h00</div>
+          <div class="sub">Presupuestos procesales · Solo para inscritos anticipados</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Vie 9</span><span class="dow">May</span></div>
+        <div class="event-dot c-prod"></div>
+        <div class="event-card b-prod">
+          <div class="tag">Producción</div>
+          <div class="title">Envío de material del taller a inscritos</div>
+          <div class="sub">Workbook + recursos · Circle + grupos WhatsApp</div>
+        </div>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- SEMANA 4 -->
+  <details class="week-accordion">
+    <summary class="week-label">
+      <span class="wl-left">
+        <span class="wl-arrow">▸</span>
+        <span class="wl-num">Semana 4</span>
+        <span class="wl-date">May 10 – 16</span>
+      </span>
+      <span class="phase-tag pt-antes">Antes</span>
+    </summary>
+    <div class="week-body">
+
+      <div class="event">
+        <div class="event-date"><span class="day">Dom 10</span><span class="dow">May</span></div>
+        <div class="event-dot c-email"></div>
+        <div class="event-card b-email">
+          <div class="tag">Email — Brevo</div>
+          <div class="title">Anuncio del LIVE gratuito</div>
+        </div>
+      </div>
+
+      <div class="event key">
+        <div class="event-date"><span class="day">Dom 10</span><span class="dow">May</span></div>
+        <div class="event-dot c-live"></div>
+        <div class="event-card b-live">
+          <div class="tag">Evento clave · LIVE gratuito mensual</div>
+          <div class="title">📡 LIVE — YouTube + X + TikTok</div>
+          <div class="sub">Streamyard · Mantiene momentum · Promueve el taller</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Lun 12</span><span class="dow">May</span></div>
+        <div class="event-dot c-content"></div>
+        <div class="event-card b-content">
+          <div class="tag">Contenido orgánico</div>
+          <div class="title">Reel retargeting</div>
+          <div class="sub">+ carrusel</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Lun 12</span><span class="dow">May</span></div>
+        <div class="event-dot c-ads"></div>
+        <div class="event-card b-ads">
+          <div class="tag">Ads — Meta</div>
+          <div class="title">Retargeting activo</div>
+          <div class="sub">Reel + carrusel</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Mié 14</span><span class="dow">May</span></div>
+        <div class="event-dot c-content"></div>
+        <div class="event-card b-content">
+          <div class="tag">Contenido orgánico</div>
+          <div class="title">Reel últimos cupos — spoiler diapositivas</div>
+          <div class="sub">+ carrusel</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Mié 14</span><span class="dow">May</span></div>
+        <div class="event-dot c-ads"></div>
+        <div class="event-card b-ads">
+          <div class="tag">Ads — Meta</div>
+          <div class="title">Últimos cupos activo</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Vie 16</span><span class="dow">May</span></div>
+        <div class="event-dot c-email"></div>
+        <div class="event-card b-email">
+          <div class="tag">Email — Brevo</div>
+          <div class="title">Último llamado</div>
+        </div>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- SEMANA 5 -->
+  <details class="week-accordion">
+    <summary class="week-label">
+      <span class="wl-left">
+        <span class="wl-arrow">▸</span>
+        <span class="wl-num">Semana 5</span>
+        <span class="wl-date">May 17 – 21</span>
+      </span>
+      <span class="phase-tag pt-durante">Durante</span>
+    </summary>
+    <div class="week-body">
+
+      <div class="event">
+        <div class="event-date"><span class="day">Sáb 17</span><span class="dow">May</span></div>
+        <div class="event-dot c-ventas"></div>
+        <div class="event-card b-ventas">
+          <div class="tag">Ventas — Kommo</div>
+          <div class="title">Micro campaña: Últimos cupos</div>
+          <div class="sub">Reactivar leads del pipeline antes del taller</div>
+        </div>
+      </div>
+
+      <div class="event key">
+        <div class="event-date"><span class="day">Mar 19</span><span class="dow">May</span></div>
+        <div class="event-dot c-evento"></div>
+        <div class="event-card b-evento">
+          <div class="tag">Sesión 1</div>
+          <div class="title">🎓 Taller en vivo — Zoom · 18h30</div>
+          <div class="sub">Workbook + materiales disponibles en Circle y grupos WhatsApp</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">Mar 19</span><span class="dow">May</span></div>
+        <div class="event-dot c-ventas"></div>
+        <div class="event-card b-ventas">
+          <div class="tag">Ventas — Kommo</div>
+          <div class="title">Micro campaña: Post sesión 1</div>
+          <div class="sub">Reactivar leads calientes tras la primera sesión</div>
+        </div>
+      </div>
+
+      <div class="event key">
+        <div class="event-date"><span class="day">Jue 21</span><span class="dow">May</span></div>
+        <div class="event-dot c-evento"></div>
+        <div class="event-card b-evento">
+          <div class="tag">Sesión 2 — Cierre</div>
+          <div class="title">🎓 Taller en vivo — Zoom · 18h30</div>
+        </div>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- SEMANA 6 — DESPUÉS -->
+  <details class="week-accordion">
+    <summary class="week-label">
+      <span class="wl-left">
+        <span class="wl-arrow">▸</span>
+        <span class="wl-num">Semana 6</span>
+        <span class="wl-date">May 22 en adelante</span>
+      </span>
+      <span class="phase-tag pt-despues">Después</span>
+    </summary>
+    <div class="week-body">
+
+      <div class="event">
+        <div class="event-date"><span class="day">May 22</span><span class="dow">Vie</span></div>
+        <div class="event-dot c-post"></div>
+        <div class="event-card b-post">
+          <div class="tag">Entrega</div>
+          <div class="title">Grabaciones publicadas en Circle · Certificado digital</div>
+        </div>
+      </div>
+
+      <div class="event">
+        <div class="event-date"><span class="day">May 22</span><span class="dow">Vie</span></div>
+        <div class="event-dot c-email"></div>
+        <div class="event-card b-email">
+          <div class="tag">Email — Brevo</div>
+          <div class="title">Email post-taller</div>
+          <div class="sub">Acceso a grabaciones + próximos pasos</div>
+        </div>
+      </div>
+
+      <div class="event key">
+        <div class="event-date"><span class="day">May 26</span><span class="dow">Mar</span></div>
+        <div class="event-dot c-ventas"></div>
+        <div class="event-card b-ventas">
+          <div class="tag">Siguiente ciclo</div>
+          <div class="title">Promoción del siguiente taller + Upsell Legalité+</div>
+          <div class="sub">Inicia el próximo ciclo con la base de compradores activos</div>
+        </div>
+      </div>
+
+    </div>
+  </details>
+
+</div><!-- end timeline -->
+
+<footer>
+  <p>LEGALITÉ · USO INTERNO</p>
+  <div class="leg"><div class="leg-dot" style="background:#5b8fe8"></div>Producción</div>
+  <div class="leg"><div class="leg-dot" style="background:#e87b5b"></div>Contenido</div>
+  <div class="leg"><div class="leg-dot" style="background:#4ecb8d"></div>Ads</div>
+  <div class="leg"><div class="leg-dot" style="background:#b05be8"></div>Email</div>
+  <div class="leg"><div class="leg-dot" style="background:#e8b84b"></div>Evento clave</div>
+  <div class="leg"><div class="leg-dot" style="background:#5bcfe8"></div>LIVE</div>
+  <div class="leg"><div class="leg-dot" style="background:#C8102E"></div>Ventas</div>
+  <div class="leg"><div class="leg-dot" style="background:#888"></div>Post-taller</div>
+</footer>
+
+</body>
+</html>
