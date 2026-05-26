@@ -40,19 +40,21 @@ model Retro {
   template   CycleTemplate   @relation(fields: [templateId], references: [id])
   items      RetroItem[]
   sessions   PersonSession[]
+  sprints    Sprint[]
 }
 
 model RetroItem {
-  id            String     @id @default(cuid())
+  id            String      @id @default(cuid())
   retroId       String
-  retro         Retro      @relation(fields: [retroId], references: [id])
+  retro         Retro       @relation(fields: [retroId], references: [id])
   taskId        String
-  task          Task       @relation(fields: [taskId], references: [id])
+  task          Task        @relation(fields: [taskId], references: [id])
   person        String
   status        ItemStatus?
   effectiveness Int?
   note          String?
-  updatedAt     DateTime   @updatedAt
+  liveStatus    LiveStatus?
+  updatedAt     DateTime    @updatedAt
 
   @@unique([retroId, taskId, person])
 }
@@ -65,6 +67,42 @@ model PersonSession {
   completedAt DateTime @default(now())
 
   @@unique([retroId, person])
+}
+
+model Sprint {
+  id          String        @id @default(cuid())
+  cycleId     String
+  phase       Phase
+  status      SprintStatus  @default(UPCOMING)
+  startedAt   DateTime?
+  graceEndsAt DateTime?
+  closedAt    DateTime?
+  createdAt   DateTime      @default(now())
+
+  cycle    Retro          @relation(fields: [cycleId], references: [id])
+  sessions SprintSession[]
+}
+
+model SprintSession {
+  id          String   @id @default(cuid())
+  sprintId    String
+  sprint      Sprint   @relation(fields: [sprintId], references: [id])
+  person      String
+  completedAt DateTime @default(now())
+
+  @@unique([sprintId, person])
+}
+
+enum SprintStatus {
+  UPCOMING
+  ACTIVE
+  GRACE
+  CLOSED
+}
+
+enum LiveStatus {
+  PENDING
+  DONE
 }
 
 enum Phase {
