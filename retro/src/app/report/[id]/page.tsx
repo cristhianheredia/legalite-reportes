@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { executionScore, effectivenessScore, phaseScores, criticalGaps } from '@/lib/scoring'
 import { generateRecommendations } from '@/lib/recommendations'
-import { PHASE_LABELS, PHASE_ORDER, WEIGHT_LABELS, PERSON_LABELS } from '@/lib/constants'
+import { PHASE_LABELS, PHASE_ORDER, WEIGHT_LABELS, PERSON_LABELS, PERSONS } from '@/lib/constants'
 import CloseRetroButton from './CloseRetroButton'
 import PrintButton from './PrintButton'
 
@@ -14,6 +14,7 @@ export default async function ReportPage({ params }: { params: { id: string } })
     include: {
       items: { include: { task: true } },
       sessions: true,
+      sprints: { include: { sessions: true }, orderBy: { createdAt: 'asc' } },
       template: {
         include: { tasks: { where: { archived: false }, orderBy: [{ phase: 'asc' }, { order: 'asc' }] } },
       },
@@ -169,6 +170,82 @@ export default async function ReportPage({ params }: { params: { id: string } })
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* Sprint timeline (PM cycles only) */}
+      {retro.sprints.length > 0 && (
+        <section className="phase-section">
+          <h2 className="section-title text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
+            Timeline de sprints
+          </h2>
+          <div className="space-y-2">
+            {retro.sprints.map((sprint, i) => {
+              const sprintItems = items.filter(
+                (item) => item.task.phase === sprint.phase,
+              )
+              const sprintExecution = executionScore(sprintItems)
+              const sprintEffectiveness = effectivenessScore(sprintItems)
+              const miniRetroDone = sprint.sessions.length
+              const statusColors: Record<string, string> = {
+                UPCOMING: 'bg-blue-100 text-blue-700',
+                ACTIVE: 'bg-green-100 text-green-700',
+                GRACE: 'bg-amber-100 text-amber-700',
+                CLOSED: 'bg-gray-100 text-gray-600',
+              }
+              const statusLabels: Record<string, string> = {
+                UPCOMING: 'Próximo',
+                ACTIVE: 'Activo',
+                GRACE: 'Gracia',
+                CLOSED: 'Cerrado',
+              }
+
+              return (
+                <div
+                  key={sprint.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4 flex items-center gap-4"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 shrink-0">
+                    S{i + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-gray-800">
+                        {PHASE_LABELS[sprint.phase as keyof typeof PHASE_LABELS]}
+                      </p>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${statusColors[sprint.status]}`}>
+                        {statusLabels[sprint.status]}
+                      </span>
+                    </div>
+                    {sprint.status === 'CLOSED' && (
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Mini-retros: {miniRetroDone}/{PERSONS.length}
+                        {sprint.closedAt && ` · Cerrado ${new Date(sprint.closedAt).toLocaleDateString('es-EC', { day: 'numeric', month: 'short' })}`}
+                      </p>
+                    )}
+                  </div>
+                  {sprint.status === 'CLOSED' && sprintItems.length > 0 && (
+                    <div className="text-right shrink-0">
+                      <p className={`text-lg font-bold ${sprintExecution >= 70 ? 'text-green-600' : sprintExecution >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                        {sprintExecution}%
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        ef. {sprintEffectiveness > 0 ? `${sprintEffectiveness}/5` : '—'}
+                      </p>
+                    </div>
+                  )}
+                  {sprint.status !== 'UPCOMING' && (
+                    <a
+                      href={`/sprint/${sprint.id}`}
+                      className="text-xs text-gray-400 hover:text-red-600 shrink-0"
+                    >
+                      Ver →
+                    </a>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </section>
       )}
