@@ -10,6 +10,7 @@ datasource db {
 model CycleTemplate {
   id        String   @id @default(cuid())
   version   Int
+  name      String   @default("")
   createdAt DateTime @default(now())
   tasks     Task[]
   retros    Retro[]
