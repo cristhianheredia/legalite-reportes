@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { PHASE_LABELS, PHASE_ORDER } from '@/lib/constants'
 import type { Phase } from '@prisma/client'
 
@@ -95,12 +96,20 @@ export default function PlanCard({ template }: { template: Template }) {
             </p>
           </div>
           {!showForm && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="shrink-0 bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-700 transition-colors"
-            >
-              + Crear ciclo PM
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href={`/planes/${template.id}`}
+                className="text-xs text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Ver tareas
+              </Link>
+              <button
+                onClick={() => setShowForm(true)}
+                className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-700 transition-colors"
+              >
+                + Crear ciclo PM
+              </button>
+            </div>
           )}
         </div>
       </div>
