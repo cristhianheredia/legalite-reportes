@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+
 import { PHASE_LABELS, PHASE_ORDER } from '@/lib/constants'
 import type { Phase } from '@prisma/client'
 
@@ -58,8 +59,7 @@ export default function PlanCard({ template }: { template: Template }) {
         }),
       })
       if (!res.ok) throw new Error()
-      const retro = await res.json()
-      router.push(`/retro/${retro.id}`)
+      router.push('/')
     } catch {
       setError('No se pudo crear el ciclo. Intenta de nuevo.')
       setLoading(false)
